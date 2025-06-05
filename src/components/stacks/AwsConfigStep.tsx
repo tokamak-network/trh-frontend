@@ -1,11 +1,9 @@
 import { useState } from "react";
-import { useFormContext } from "react-hook-form";
 import { FormInput } from "@/components/ui/FormInput";
 import { Eye, EyeOff } from "lucide-react";
 
 export function AwsConfigStep() {
   const [showSecretKey, setShowSecretKey] = useState(false);
-  const { watch } = useFormContext();
 
   return (
     <section className="bg-white rounded-lg shadow-sm p-6">

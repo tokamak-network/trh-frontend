@@ -30,40 +30,33 @@ export function AccountsStep() {
   // Initialize from existing form values
   useEffect(() => {
     const initializeFromForm = async () => {
-      // If we have any account set, we need to regenerate the accounts list
-      const adminAccount = getValues("adminAccount");
-      const adminPrivateKey = getValues("adminPrivateKey");
+      // Check if we have any private keys set
+      const storedSeedPhrase = getValues("seedPhrase");
 
-      if (adminAccount && adminPrivateKey) {
-        // We have existing accounts, let's regenerate the seed phrase
-        const storedSeedPhrase = getValues("seedPhrase");
-        if (storedSeedPhrase) {
-          setSeedPhrase(storedSeedPhrase);
-          // This will trigger the other useEffect to regenerate accounts
+      if (storedSeedPhrase && l1RpcUrl) {
+        setSeedPhrase(storedSeedPhrase);
+        const result = validateSeedPhrase(storedSeedPhrase);
+        setValidation(result);
+
+        if (result.isValid) {
+          try {
+            setIsLoading(true);
+            const newAccounts = await generateAccountsFromSeedPhrase(
+              storedSeedPhrase,
+              l1RpcUrl
+            );
+            setAccounts(newAccounts);
+          } catch (err) {
+            console.error("Error restoring accounts:", err);
+          } finally {
+            setIsLoading(false);
+          }
         }
       }
     };
 
     initializeFromForm();
-  }, []);
-
-  useEffect(() => {
-    const result = validateSeedPhrase(seedPhrase);
-    setValidation(result);
-
-    if (result.isValid && l1RpcUrl) {
-      generateAccounts();
-    }
-  }, [seedPhrase]);
-
-  const handleSeedPhraseChange = (index: number, value: string) => {
-    const words = seedPhrase.trim().split(/\s+/);
-    words[index] = value.trim().toLowerCase();
-    const newSeedPhrase = words.join(" ");
-    setSeedPhrase(newSeedPhrase);
-    // Store seed phrase in form data
-    setValue("seedPhrase", newSeedPhrase);
-  };
+  }, [l1RpcUrl, getValues]);
 
   const generateAccounts = async () => {
     try {
@@ -83,17 +76,6 @@ export function AccountsStep() {
         l1RpcUrl
       );
       setAccounts(newAccounts);
-
-      // Restore previously selected accounts if they exist in the new accounts list
-      Object.entries(selectedAccounts).forEach(([role, address]) => {
-        if (address && newAccounts.some((acc) => acc.address === address)) {
-          const account = newAccounts.find((acc) => acc.address === address);
-          if (account) {
-            setValue(role + "Account", account.address);
-            setValue(role + "PrivateKey", account.privateKey);
-          }
-        }
-      });
     } catch (err) {
       console.error("Error generating accounts:", err);
       setValidation({
@@ -107,17 +89,34 @@ export function AccountsStep() {
     }
   };
 
+  useEffect(() => {
+    const result = validateSeedPhrase(seedPhrase);
+    setValidation(result);
+
+    if (result.isValid && l1RpcUrl) {
+      generateAccounts();
+    }
+  }, [seedPhrase, generateAccounts]);
+
+  const handleSeedPhraseChange = (index: number, value: string) => {
+    const words = seedPhrase.trim().split(/\s+/);
+    words[index] = value.trim().toLowerCase();
+    const newSeedPhrase = words.join(" ");
+    setSeedPhrase(newSeedPhrase);
+    // Store seed phrase in form data for persistence
+    setValue("seedPhrase", newSeedPhrase, { shouldValidate: false });
+  };
+
   const handleAccountSelect = (
-    address: string,
+    account: Account,
     role: keyof typeof selectedAccounts
   ) => {
-    // Find the selected account
-    const selectedAccount = accounts.find((acc) => acc.address === address);
-    if (selectedAccount) {
-      // Store both address and private key
-      setValue(role + "Account", address);
-      setValue(role + "PrivateKey", selectedAccount.privateKey);
-    }
+    // Store both address and private key
+    setValue(role + "Account", account.address);
+    // Store private key in a hidden form field
+    setValue(role + "PrivateKey", account.privateKey, {
+      shouldValidate: false,
+    });
   };
 
   const renderAccountSelector = (
@@ -131,7 +130,14 @@ export function AccountsStep() {
       </label>
       <select
         value={selectedAccounts[accountType] || ""}
-        onChange={(e) => handleAccountSelect(e.target.value, accountType)}
+        onChange={(e) => {
+          const account = accounts.find(
+            (acc) => acc.address === e.target.value
+          );
+          if (account) {
+            handleAccountSelect(account, accountType);
+          }
+        }}
         className="w-full px-3 py-2 border border-gray-300 rounded-md"
       >
         <option value="">Select an account</option>
@@ -174,7 +180,14 @@ export function AccountsStep() {
 
   return (
     <section className="bg-white rounded-lg shadow-sm p-6">
-      <h2 className="text-xl font-semibold mb-6">Account Configuration</h2>
+      <h2 className="text-xl font-semibold mb-6">Account Selection</h2>
+      <div className="bg-blue-50 border border-blue-200 p-4 rounded-md mb-6">
+        <p className="text-blue-800 text-sm">
+          Enter your seed phrase to generate accounts. Select different accounts
+          for each role. Each account should have sufficient ETH balance for
+          their respective operations.
+        </p>
+      </div>
 
       <div className="mb-8">
         <div className="flex items-center justify-between mb-4">
@@ -235,10 +248,11 @@ export function AccountsStep() {
           {renderAccountSelector("Batcher", "batcher")}
           {renderAccountSelector("Sequencer", "sequencer")}
 
-          <div className="bg-blue-50 p-4 rounded-md">
-            <p className="text-sm text-blue-800">
-              Make sure to save these account details securely. You will need
-              them to manage your L2 chain.
+          <div className="bg-yellow-50 p-4 rounded-md">
+            <p className="text-sm text-yellow-800">
+              Make sure each selected account has sufficient ETH balance for
+              their operations. The accounts will be used to sign transactions
+              for their respective roles.
             </p>
           </div>
         </div>

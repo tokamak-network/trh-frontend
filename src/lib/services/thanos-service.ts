@@ -38,7 +38,7 @@ export interface GetThanosStackResponse {
 }
 
 export interface CreateStackRequest {
-  network: "Mainnet" | "Testnet" | "LocalDevnet";
+  network: string;
   l1RpcUrl: string;
   l1BeaconUrl: string;
   l2BlockTime: number;

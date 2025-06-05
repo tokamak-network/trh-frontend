@@ -5,6 +5,7 @@ import { StatusBadge } from "./StatusBadge";
 import { Status } from "@/lib/types/status";
 import { Eye } from "lucide-react";
 import Link from "next/link";
+import { showToast } from "@/lib/utils/toast";
 
 export function ThanosStacksList() {
   const [stacks, setStacks] = useState<ThanosStack[]>([]);
@@ -17,8 +18,12 @@ export function ThanosStacksList() {
         const data = await thanosService.getThanosStacks();
         setStacks(data);
       } catch (err) {
-        setError("Failed to fetch Thanos stacks");
-        console.error("Error fetching stacks:", err);
+        setError(
+          err instanceof Error ? err.message : "Failed to fetch Thanos stacks"
+        );
+        showToast.error(
+          err instanceof Error ? err.message : "Failed to fetch Thanos stacks"
+        );
       } finally {
         setLoading(false);
       }

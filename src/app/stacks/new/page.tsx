@@ -4,10 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
-import {
-  CreateStackRequest,
-  thanosService,
-} from "@/lib/services/thanos-service";
+import { thanosService } from "@/lib/services/thanos-service";
 import { useForm, FormProvider, SubmitHandler } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -17,6 +14,7 @@ import { AccountsStep } from "@/components/stacks/AccountsStep";
 import { AwsConfigStep } from "@/components/stacks/AwsConfigStep";
 import { ReviewStep } from "@/components/stacks/ReviewStep";
 import { stepSchemas, validateStep } from "@/lib/validation/stack-validation";
+import { showToast } from "@/lib/utils/toast";
 
 const formSchema = z.object({
   network: z.enum(["Mainnet", "Testnet"]),
@@ -45,6 +43,10 @@ const formSchema = z.object({
   proposerAccount: z
     .string()
     .regex(/^0x[a-fA-F0-9]{40}$/, "Must be a valid Ethereum address"),
+  adminPrivateKey: z.string(),
+  sequencerPrivateKey: z.string(),
+  batcherPrivateKey: z.string(),
+  proposerPrivateKey: z.string(),
   awsAccessKey: z.string().min(1, "AWS Access Key is required"),
   awsSecretAccessKey: z.string().min(1, "AWS Secret Access Key is required"),
   awsRegion: z.string().min(1, "AWS Region is required"),
@@ -64,7 +66,6 @@ const steps = [
 export default function CreateStackPage() {
   const router = useRouter();
   const [currentStep, setCurrentStep] = useState(0);
-  const [error, setError] = useState<string | null>(null);
 
   const methods = useForm<FormData>({
     resolver: zodResolver(formSchema),
@@ -85,19 +86,30 @@ export default function CreateStackPage() {
 
   const onSubmit: SubmitHandler<FormData> = async (data) => {
     try {
-      setError(null);
-      const request: CreateStackRequest = {
-        ...data,
+      const request = {
+        network: data.network.toLowerCase(),
+        chainName: data.chainName,
+        l1RpcUrl: data.l1RpcUrl,
+        l1BeaconUrl: data.l1BeaconUrl,
         l2BlockTime: parseInt(data.l2BlockTime),
         batchSubmissionFrequency: parseInt(data.batchSubmissionFrequency),
         outputRootFrequency: parseInt(data.outputRootFrequency),
         challengePeriod: parseInt(data.challengePeriod),
+        adminAccount: data.adminPrivateKey.replace("0x", ""),
+        sequencerAccount: data.sequencerPrivateKey.replace("0x", ""),
+        batcherAccount: data.batcherPrivateKey.replace("0x", ""),
+        proposerAccount: data.proposerPrivateKey.replace("0x", ""),
+        awsAccessKey: data.awsAccessKey,
+        awsSecretAccessKey: data.awsSecretAccessKey,
+        awsRegion: data.awsRegion,
       };
+
       await thanosService.createStack(request);
+      showToast.success("Stack created successfully!");
       router.push("/home");
     } catch (err) {
       console.error("Error creating stack:", err);
-      setError("Failed to create stack. Please try again.");
+      showToast.error("Failed to create stack. Please try again.");
     }
   };
 
@@ -152,12 +164,6 @@ export default function CreateStackPage() {
 
       <div className="max-w-4xl mx-auto">
         <h1 className="text-3xl font-bold mb-8">Deploy New Stack</h1>
-
-        {error && (
-          <div className="bg-red-50 text-red-600 p-4 rounded-md mb-6">
-            {error}
-          </div>
-        )}
 
         <div className="mb-8">
           <div className="flex justify-between items-center">
@@ -222,11 +228,12 @@ export default function CreateStackPage() {
                   </button>
                 ) : (
                   <button
-                    type="submit"
+                    type="button"
+                    onClick={handleSubmit(onSubmit)}
                     disabled={isSubmitting}
                     className="px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors disabled:bg-blue-400"
                   >
-                    {isSubmitting ? "Deploying..." : "Deploy Stack"}
+                    {isSubmitting ? "Deploying..." : "Deploy Now"}
                   </button>
                 )}
               </div>

@@ -8,7 +8,7 @@ import Link from "next/link";
 export default function StackDetailPage({
   params,
 }: {
-  params: Promise<{ id: string }> | { id: string };
+  params: Promise<{ id: string }>;
 }) {
   const resolvedParams = use(
     params instanceof Promise ? params : Promise.resolve(params)
