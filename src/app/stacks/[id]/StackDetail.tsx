@@ -4,6 +4,8 @@ import { useEffect, useState } from "react";
 import { thanosService, ThanosStack } from "@/lib/services/thanos-service";
 import { StatusBadge } from "@/components/StatusBadge";
 import { Status } from "@/lib/types/status";
+import { showToast } from "@/lib/utils/toast";
+import { Loader } from "lucide-react";
 
 interface StackDetailProps {
   id: string;
@@ -17,25 +19,42 @@ export function StackDetail({ id }: StackDetailProps) {
   useEffect(() => {
     const fetchStack = async () => {
       try {
+        setLoading(true);
+        setError(null);
         const data = await thanosService.getThanosStack(id);
         setStack(data);
       } catch (err) {
-        setError("Failed to fetch stack details");
+        const errorMessage = "Failed to fetch stack details";
+        setError(errorMessage);
+        showToast.error(errorMessage);
         console.error("Error fetching stack:", err);
       } finally {
         setLoading(false);
       }
     };
 
-    fetchStack();
+    if (id) {
+      fetchStack();
+    }
   }, [id]);
 
   if (loading) {
-    return <div>Loading stack details...</div>;
+    return (
+      <div className="flex items-center justify-center h-64">
+        <Loader className="w-8 h-8 text-blue-600 animate-spin" />
+      </div>
+    );
   }
 
   if (error || !stack) {
-    return <div className="text-red-500">{error || "Stack not found"}</div>;
+    return (
+      <div className="bg-red-50 border border-red-200 rounded-lg p-6 text-center">
+        <p className="text-red-600 font-medium">{error || "Stack not found"}</p>
+        <p className="text-red-500 mt-2">
+          Please try refreshing the page or check if the stack ID is correct.
+        </p>
+      </div>
+    );
   }
 
   return (

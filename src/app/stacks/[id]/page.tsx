@@ -1,18 +1,16 @@
 "use client";
 
-import { Suspense, use } from "react";
-import { StackDetail } from "./StackDetail";
+import { use } from "react";
 import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
+import { StackDetail } from "./StackDetail";
 
-export default function StackDetailPage({
-  params,
-}: {
+interface PageProps {
   params: Promise<{ id: string }>;
-}) {
-  const resolvedParams = use(
-    params instanceof Promise ? params : Promise.resolve(params)
-  );
+}
+
+export default function StackDetailPage({ params }: PageProps) {
+  const resolvedParams = use(params);
 
   return (
     <div className="container mx-auto px-4 py-8">
@@ -26,9 +24,7 @@ export default function StackDetailPage({
         </Link>
       </div>
 
-      <Suspense fallback={<div>Loading stack details...</div>}>
-        <StackDetail id={resolvedParams.id} />
-      </Suspense>
+      <StackDetail id={resolvedParams.id} />
     </div>
   );
 }

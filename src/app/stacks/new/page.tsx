@@ -71,6 +71,8 @@ export default function CreateStackPage() {
     resolver: zodResolver(formSchema),
     mode: "onChange",
     defaultValues: {
+      network: "Testnet",
+      chainName: "",
       l2BlockTime: "2",
       batchSubmissionFrequency: "1440",
       outputRootFrequency: "240",

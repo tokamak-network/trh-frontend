@@ -29,79 +29,56 @@ export function AccountsStep() {
 
   // Initialize from existing form values
   useEffect(() => {
-    const initializeFromForm = async () => {
-      // Check if we have any private keys set
+    const initializeFromForm = () => {
       const storedSeedPhrase = getValues("seedPhrase");
-
-      if (storedSeedPhrase && l1RpcUrl) {
+      if (storedSeedPhrase) {
         setSeedPhrase(storedSeedPhrase);
         const result = validateSeedPhrase(storedSeedPhrase);
         setValidation(result);
-
-        if (result.isValid) {
-          try {
-            setIsLoading(true);
-            const newAccounts = await generateAccountsFromSeedPhrase(
-              storedSeedPhrase,
-              l1RpcUrl
-            );
-            setAccounts(newAccounts);
-          } catch (err) {
-            console.error("Error restoring accounts:", err);
-          } finally {
-            setIsLoading(false);
-          }
-        }
       }
     };
 
     initializeFromForm();
-  }, [l1RpcUrl, getValues]);
+  }, [getValues]);
 
-  const generateAccounts = async () => {
-    try {
-      setIsLoading(true);
-
-      if (!l1RpcUrl) {
-        setValidation({
-          isValid: false,
-          message:
-            "Please configure L1 RPC URL in the Configuration step first",
-        });
-        return;
-      }
-
-      const newAccounts = await generateAccountsFromSeedPhrase(
-        seedPhrase,
-        l1RpcUrl
-      );
-      setAccounts(newAccounts);
-    } catch (err) {
-      console.error("Error generating accounts:", err);
-      setValidation({
-        isValid: false,
-        message:
-          "Failed to generate accounts. Please ensure your seed phrase is valid.",
-      });
-      setAccounts([]);
-    } finally {
-      setIsLoading(false);
+  // Add new effect to validate seed phrase when it changes
+  useEffect(() => {
+    if (seedPhrase.trim()) {
+      const result = validateSeedPhrase(seedPhrase.trim());
+      setValidation(result);
     }
-  };
+  }, [seedPhrase]);
 
   useEffect(() => {
-    const result = validateSeedPhrase(seedPhrase);
-    setValidation(result);
+    const generateAccountsIfValid = async () => {
+      if (validation.isValid && l1RpcUrl && seedPhrase) {
+        try {
+          setIsLoading(true);
+          const newAccounts = await generateAccountsFromSeedPhrase(
+            seedPhrase.trim(),
+            l1RpcUrl
+          );
+          setAccounts(newAccounts);
+        } catch (err) {
+          console.error("Error generating accounts:", err);
+          setValidation({
+            isValid: false,
+            message:
+              "Failed to generate accounts. Please check your L1 RPC URL.",
+          });
+        } finally {
+          setIsLoading(false);
+        }
+      }
+    };
 
-    if (result.isValid && l1RpcUrl) {
-      generateAccounts();
-    }
-  }, [seedPhrase, generateAccounts]);
+    generateAccountsIfValid();
+  }, [validation.isValid, l1RpcUrl, seedPhrase]);
 
   const handleSeedPhraseChange = (index: number, value: string) => {
     const words = seedPhrase.trim().split(/\s+/);
     words[index] = value.trim().toLowerCase();
-    const newSeedPhrase = words.join(" ");
+    const newSeedPhrase = words.join(" ").trim();
     setSeedPhrase(newSeedPhrase);
     // Store seed phrase in form data for persistence
     setValue("seedPhrase", newSeedPhrase, { shouldValidate: false });
@@ -152,7 +129,7 @@ export function AccountsStep() {
   );
 
   const renderSeedPhraseInputs = () => {
-    const words = seedPhrase.split(/\s+/);
+    const words = seedPhrase.trim().split(/\s+/);
     return (
       <div className="grid grid-cols-3 gap-2 mb-4">
         {Array.from({ length: 12 }).map((_, index) => (
@@ -161,6 +138,12 @@ export function AccountsStep() {
               type={showSeedPhrase ? "text" : "password"}
               value={words[index] || ""}
               onChange={(e) => handleSeedPhraseChange(index, e.target.value)}
+              onBlur={() => {
+                if (seedPhrase.trim()) {
+                  const result = validateSeedPhrase(seedPhrase.trim());
+                  setValidation(result);
+                }
+              }}
               placeholder={`Word ${index + 1}`}
               className={`w-full px-3 py-2 border rounded-md text-sm ${
                 !validation.isValid && words[index]

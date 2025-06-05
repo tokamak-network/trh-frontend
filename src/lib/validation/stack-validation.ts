@@ -1,5 +1,4 @@
 import { z } from "zod";
-import { showToast } from "../utils/toast";
 
 const networkStepSchema = z.object({
   network: z.enum(["Mainnet", "Testnet"]),
@@ -55,8 +54,7 @@ export function validateStep(step: keyof typeof stepSchemas, data: any) {
   try {
     stepSchemas[step].parse(data);
     return true;
-  } catch (error) {
-    showToast.error(error instanceof Error ? error.message : "Unknown error");
+  } catch {
     return false;
   }
 }

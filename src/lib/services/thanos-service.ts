@@ -34,7 +34,7 @@ export interface GetAllThanosStacksResponse {
 }
 
 export interface GetThanosStackResponse {
-  stack: ThanosStack;
+  stacks: ThanosStack;
 }
 
 export interface CreateStackRequest {
@@ -81,7 +81,7 @@ export const thanosService = {
     const response = await apiClient.get<GetThanosStackResponse>(
       `${API_ENDPOINTS.THANOS_STACKS}/${id}`
     );
-    return response.data.stack;
+    return response.data.stacks;
   },
 
   /**
