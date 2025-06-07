@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import { thanosService, ThanosStack } from "@/lib/services/thanos-service";
 import { StatusBadge } from "./StatusBadge";
 import { Status } from "@/lib/types/status";
-import { Eye } from "lucide-react";
+import { Eye, Settings } from "lucide-react";
 import Link from "next/link";
 import { showToast } from "@/lib/utils/toast";
 
@@ -62,13 +62,22 @@ export function ThanosStacksList() {
                     <StatusBadge status={stack.status as Status} />
                   </div>
                 </div>
-                <Link
-                  href={`/stacks/${stack.id}`}
-                  className="p-2 rounded-full hover:bg-gray-100 transition-colors"
-                  title="View Stack Details"
-                >
-                  <Eye className="w-5 h-5 text-gray-600" />
-                </Link>
+                <div className="flex gap-2">
+                  <Link
+                    href={`/stacks/${stack.id}/deployment`}
+                    className="p-2 rounded-full hover:bg-gray-100 transition-colors"
+                    title="View Deployment Configuration"
+                  >
+                    <Settings className="w-5 h-5 text-gray-600" />
+                  </Link>
+                  <Link
+                    href={`/stacks/${stack.id}`}
+                    className="p-2 rounded-full hover:bg-gray-100 transition-colors"
+                    title="View Stack Details"
+                  >
+                    <Eye className="w-5 h-5 text-gray-600" />
+                  </Link>
+                </div>
               </div>
             </div>
           ))}

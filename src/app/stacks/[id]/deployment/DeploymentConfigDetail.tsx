@@ -7,11 +7,11 @@ import { Status } from "@/lib/types/status";
 import { showToast } from "@/lib/utils/toast";
 import { Loader } from "lucide-react";
 
-interface StackDetailProps {
+interface DeploymentConfigDetailProps {
   id: string;
 }
 
-export function StackDetail({ id }: StackDetailProps) {
+export function DeploymentConfigDetail({ id }: DeploymentConfigDetailProps) {
   const [stack, setStack] = useState<ThanosStack | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -24,10 +24,10 @@ export function StackDetail({ id }: StackDetailProps) {
         const data = await thanosService.getThanosStack(id);
         setStack(data);
       } catch (err) {
-        const errorMessage = "Failed to fetch stack details";
+        const errorMessage = "Failed to fetch deployment configuration";
         setError(errorMessage);
         showToast.error(errorMessage);
-        console.error("Error fetching stack:", err);
+        console.error("Error fetching deployment configuration:", err);
       } finally {
         setLoading(false);
       }
@@ -49,7 +49,9 @@ export function StackDetail({ id }: StackDetailProps) {
   if (error || !stack) {
     return (
       <div className="bg-red-50 border border-red-200 rounded-lg p-6 text-center">
-        <p className="text-red-600 font-medium">{error || "Stack not found"}</p>
+        <p className="text-red-600 font-medium">
+          {error || "Deployment configuration not found"}
+        </p>
         <p className="text-red-500 mt-2">
           Please try refreshing the page or check if the stack ID is correct.
         </p>
@@ -60,13 +62,16 @@ export function StackDetail({ id }: StackDetailProps) {
   return (
     <div className="bg-white rounded-lg shadow-sm p-6">
       <div className="flex justify-between items-start mb-6">
-        <h1 className="text-3xl font-bold">{stack.config.chainName}</h1>
+        <div>
+          <h1 className="text-3xl font-bold">{stack.config.chainName}</h1>
+          <p className="text-gray-600 mt-1">Deployment Configuration</p>
+        </div>
         <StatusBadge status={stack.status as Status} />
       </div>
 
       <div className="grid gap-6">
         <section>
-          <h2 className="text-xl font-semibold mb-4">General Information</h2>
+          <h2 className="text-xl font-semibold mb-4">Deployment Information</h2>
           <div className="grid grid-cols-2 gap-4">
             <div>
               <p className="text-gray-600">Network</p>
@@ -76,23 +81,29 @@ export function StackDetail({ id }: StackDetailProps) {
               <p className="text-gray-600">Deployment Path</p>
               <p className="font-medium">{stack.deployment_path}</p>
             </div>
+            <div>
+              <p className="text-gray-600">AWS Region</p>
+              <p className="font-medium">{stack.config.awsRegion}</p>
+            </div>
+            <div>
+              <p className="text-gray-600">Status</p>
+              <p className="font-medium">{stack.status}</p>
+            </div>
           </div>
         </section>
 
         <section>
-          <h2 className="text-xl font-semibold mb-4">Configuration</h2>
+          <h2 className="text-xl font-semibold mb-4">Network Configuration</h2>
           <div className="grid grid-cols-2 gap-4">
             <div>
               <p className="text-gray-600">L1 RPC URL</p>
-              <p className="font-medium">{stack.config.l1RpcUrl}</p>
+              <p className="font-medium break-all">{stack.config.l1RpcUrl}</p>
             </div>
             <div>
               <p className="text-gray-600">L1 Beacon URL</p>
-              <p className="font-medium">{stack.config.l1BeaconUrl}</p>
-            </div>
-            <div>
-              <p className="text-gray-600">AWS Region</p>
-              <p className="font-medium">{stack.config.awsRegion}</p>
+              <p className="font-medium break-all">
+                {stack.config.l1BeaconUrl}
+              </p>
             </div>
             <div>
               <p className="text-gray-600">L2 Block Time</p>
@@ -110,29 +121,29 @@ export function StackDetail({ id }: StackDetailProps) {
         </section>
 
         <section>
-          <h2 className="text-xl font-semibold mb-4">Accounts</h2>
-          <div className="grid grid-cols-2 gap-4">
+          <h2 className="text-xl font-semibold mb-4">Service Accounts</h2>
+          <div className="space-y-4">
             <div>
               <p className="text-gray-600">Admin Account</p>
-              <p className="font-medium break-all">
+              <p className="font-medium break-all bg-gray-50 p-2 rounded">
                 {stack.config.adminAccount}
               </p>
             </div>
             <div>
               <p className="text-gray-600">Proposer Account</p>
-              <p className="font-medium break-all">
+              <p className="font-medium break-all bg-gray-50 p-2 rounded">
                 {stack.config.proposerAccount}
               </p>
             </div>
             <div>
               <p className="text-gray-600">Batcher Account</p>
-              <p className="font-medium break-all">
+              <p className="font-medium break-all bg-gray-50 p-2 rounded">
                 {stack.config.batcherAccount}
               </p>
             </div>
             <div>
               <p className="text-gray-600">Sequencer Account</p>
-              <p className="font-medium break-all">
+              <p className="font-medium break-all bg-gray-50 p-2 rounded">
                 {stack.config.sequencerAccount}
               </p>
             </div>
