@@ -1,4 +1,4 @@
-export type PluginType = "bridge" | "explorer";
+export type PluginType = "bridge" | "block-explorer";
 
 export interface Plugin {
   id: string;
@@ -6,19 +6,17 @@ export interface Plugin {
   name: string;
   status: string;
   stackId: string;
-  createdAt: string;
-  updatedAt: string;
   config: {
-    url?: string;
-    apiKey?: string;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     [key: string]: any;
   };
+  info: {
+    url: string;
+  };
+  logPath?: string;
 }
 
 export interface CreatePluginRequest {
-  type: PluginType;
-  name: string;
-  config: {
-    [key: string]: any;
-  };
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  [key: string]: any;
 }

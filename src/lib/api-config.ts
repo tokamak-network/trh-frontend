@@ -5,5 +5,4 @@ export const API_BASE_URL =
 
 export const API_ENDPOINTS = {
   THANOS_STACKS: "/api/v1/stacks/thanos",
-  PLUGINS: "/api/v1/plugins",
 } as const;

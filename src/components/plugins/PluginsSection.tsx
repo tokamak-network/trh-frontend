@@ -1,73 +1,39 @@
 import { useState } from "react";
 import { Plugin, PluginType } from "@/lib/types/plugin";
-import { StatusBadge } from "@/components/StatusBadge";
-import { Status } from "@/lib/types/status";
-import { ExplorerPluginForm, ExplorerFormData } from "./ExplorerPluginForm";
-import { Modal } from "./Modal";
-import { ConfirmModal } from "./ui/ConfirmModal";
-import { ChevronDown, Settings } from "lucide-react";
+import { ExplorerPluginForm, ExplorerFormData } from "../ExplorerPluginForm";
+import { Modal } from "../Modal";
+import { ConfirmModal } from "../ui/ConfirmModal";
+import { ChevronDown } from "lucide-react";
+import { PluginItem } from "./PluginItem";
+import { createPluginOptions } from "./PluginOptions";
 
 interface PluginsSectionProps {
   plugins: Plugin[];
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   onCreatePlugin: (type: PluginType, config?: any) => Promise<void>;
+  onUninstallPlugin: (plugin: Plugin) => Promise<void>;
   isCreatingPlugin: boolean;
-}
-
-interface PluginOption {
-  type: PluginType;
-  label: string;
-  isInstalled: (plugins: Plugin[]) => boolean;
-  onClick: () => void;
-}
-
-interface PluginItemProps {
-  plugin: Plugin;
-  onViewConfig: (plugin: Plugin) => void;
-}
-
-function PluginItem({ plugin, onViewConfig }: PluginItemProps) {
-  return (
-    <div className="border rounded-lg p-4">
-      <div className="flex justify-between items-start">
-        <div className="flex-grow">
-          <div className="flex items-center gap-4">
-            <h3 className="font-semibold">{plugin.name}</h3>
-            <StatusBadge status={plugin.status as Status} />
-          </div>
-          <p className="text-gray-600 mt-2">
-            URL:{" "}
-            <a href={plugin.info.url} target="_blank" rel="noopener noreferrer">
-              {plugin.info.url}
-            </a>
-          </p>
-        </div>
-        <button
-          onClick={() => onViewConfig(plugin)}
-          className="p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-full transition-colors"
-          title="View Configuration"
-        >
-          <Settings className="w-5 h-5" />
-        </button>
-      </div>
-    </div>
-  );
+  isUninstallingPlugin: boolean;
 }
 
 export function PluginsSection({
   plugins,
   onCreatePlugin,
+  onUninstallPlugin,
   isCreatingPlugin,
+  isUninstallingPlugin,
 }: PluginsSectionProps) {
   const [showExplorerModal, setShowExplorerModal] = useState(false);
   const [showBridgeConfirmModal, setShowBridgeConfirmModal] = useState(false);
   const [showDropdown, setShowDropdown] = useState(false);
   const [selectedPluginForConfig, setSelectedPluginForConfig] =
     useState<Plugin | null>(null);
+  const [pluginToUninstall, setPluginToUninstall] = useState<Plugin | null>(
+    null
+  );
 
   const handleExplorerFormSubmit = async (formData: ExplorerFormData) => {
     await onCreatePlugin("block-explorer", {
-      url: `https://explorer.thanos.network`,
       dbUsername: formData.dbUsername,
       dbPassword: formData.dbPassword,
       coinMarketCapKey: formData.coinMarketCapKey,
@@ -85,22 +51,26 @@ export function PluginsSection({
     setSelectedPluginForConfig(plugin);
   };
 
-  const pluginOptions: PluginOption[] = [
-    {
-      type: "bridge",
-      label: "Thanos Bridge",
-      isInstalled: (plugins) => plugins.some((p) => p.name === "bridge"),
-      onClick: () => setShowBridgeConfirmModal(true),
-    },
-    {
-      type: "block-explorer",
-      label: "Thanos Explorer",
-      isInstalled: (plugins) =>
-        plugins.some((p) => p.name === "block-explorer"),
-      onClick: () => setShowExplorerModal(true),
-    },
-    // Add new plugin types here in the future
-  ];
+  const handleUninstall = (plugin: Plugin) => {
+    setPluginToUninstall(plugin);
+  };
+
+  const handleUninstallConfirm = async () => {
+    if (pluginToUninstall) {
+      await onUninstallPlugin(pluginToUninstall);
+      setPluginToUninstall(null);
+    }
+  };
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const handleInstall = async (type: PluginType, config?: any) => {
+    await onCreatePlugin(type, config);
+  };
+
+  const pluginOptions = createPluginOptions(
+    () => setShowBridgeConfirmModal(true),
+    () => setShowExplorerModal(true)
+  );
 
   return (
     <section>
@@ -174,6 +144,17 @@ export function PluginsSection({
         </div>
       </Modal>
 
+      <ConfirmModal
+        isOpen={!!pluginToUninstall}
+        onClose={() => setPluginToUninstall(null)}
+        onConfirm={handleUninstallConfirm}
+        title="Uninstall Plugin"
+        message={`Are you sure you want to uninstall the ${pluginToUninstall?.name} plugin? This action cannot be undone.`}
+        confirmText="Uninstall"
+        confirmButtonClassName="bg-red-600 hover:bg-red-700"
+        isLoading={isUninstallingPlugin}
+      />
+
       <div className="grid gap-4">
         {plugins.length === 0 ? (
           <p className="text-gray-600">No plugins installed</p>
@@ -183,6 +164,8 @@ export function PluginsSection({
               key={plugin.id}
               plugin={plugin}
               onViewConfig={handleViewConfig}
+              onUninstall={handleUninstall}
+              onInstall={handleInstall}
             />
           ))
         )}

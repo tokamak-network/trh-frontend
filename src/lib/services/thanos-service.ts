@@ -20,6 +20,12 @@ export interface ThanosStackConfig {
   batchSubmissionFrequency: number;
 }
 
+export interface ThanosStackMetadata {
+  l2_url: string;
+  bridge_url?: string;
+  block_explorer_url?: string;
+}
+
 export interface ThanosStack {
   id: string;
   name: string;
@@ -27,6 +33,7 @@ export interface ThanosStack {
   config: ThanosStackConfig;
   deployment_path: string;
   status: string;
+  metadata: ThanosStackMetadata;
 }
 
 export interface GetAllThanosStacksResponse {

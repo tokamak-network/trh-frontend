@@ -8,7 +8,7 @@ import { pluginService } from "@/lib/services/plugin-service";
 import { Plugin, PluginType } from "@/lib/types/plugin";
 import { showToast } from "@/lib/utils/toast";
 import { StackInformation } from "@/components/StackInformation";
-import { PluginsSection } from "@/components/PluginsSection";
+import { PluginsSection } from "@/components/plugins/PluginsSection";
 
 interface PageProps {
   params: Promise<{ id: string }>;
@@ -21,6 +21,7 @@ export default function StackDetailPage({ params }: PageProps) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isCreatingPlugin, setIsCreatingPlugin] = useState(false);
+  const [isUninstallingPlugin, setIsUninstallingPlugin] = useState(false);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -45,19 +46,17 @@ export default function StackDetailPage({ params }: PageProps) {
     fetchData();
   }, [id]);
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const handleCreatePlugin = async (type: PluginType, config?: any) => {
     if (!stack) return;
 
     try {
       setIsCreatingPlugin(true);
-      const newPlugin = await pluginService.createPlugin(stack.id, {
+      const newPlugin = await pluginService.createPlugin(
+        stack.id,
         type,
-        name: `Thanos ${type.charAt(0).toUpperCase() + type.slice(1)}`,
-        config: config || {
-          url: `https://${type}.thanos.example.com`,
-          apiKey: `mock-api-key-${Math.random().toString(36).substr(2, 9)}`,
-        },
-      });
+        config || {}
+      );
       setPlugins([...plugins, newPlugin]);
       showToast.success(
         `${
@@ -65,9 +64,26 @@ export default function StackDetailPage({ params }: PageProps) {
         } plugin created successfully!`
       );
     } catch (err) {
+      console.error(err);
       showToast.error(`Failed to create ${type} plugin`);
     } finally {
       setIsCreatingPlugin(false);
+    }
+  };
+
+  const handleUninstallPlugin = async (plugin: Plugin) => {
+    if (!stack) return;
+
+    try {
+      setIsUninstallingPlugin(true);
+      await pluginService.deletePlugin(stack.id, plugin.id);
+      setPlugins(plugins.filter((p) => p.id !== plugin.id));
+      showToast.success(`${plugin.name} uninstalled successfully!`);
+    } catch (err) {
+      console.error(err);
+      showToast.error(`Failed to uninstall ${plugin.name}`);
+    } finally {
+      setIsUninstallingPlugin(false);
     }
   };
 
@@ -105,7 +121,9 @@ export default function StackDetailPage({ params }: PageProps) {
           <PluginsSection
             plugins={plugins}
             onCreatePlugin={handleCreatePlugin}
+            onUninstallPlugin={handleUninstallPlugin}
             isCreatingPlugin={isCreatingPlugin}
+            isUninstallingPlugin={isUninstallingPlugin}
           />
         </div>
       </div>
