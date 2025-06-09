@@ -15,6 +15,7 @@ import { AwsConfigStep } from "@/components/stacks/AwsConfigStep";
 import { ReviewStep } from "@/components/stacks/ReviewStep";
 import { stepSchemas, validateStep } from "@/lib/validation/stack-validation";
 import { showToast } from "@/lib/utils/toast";
+import { ConfirmModal } from "@/components/ui/ConfirmModal";
 
 const formSchema = z.object({
   network: z.enum(["Mainnet", "Testnet"]),
@@ -66,6 +67,10 @@ const steps = [
 export default function CreateStackPage() {
   const router = useRouter();
   const [currentStep, setCurrentStep] = useState(0);
+  const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
+  const [formDataToSubmit, setFormDataToSubmit] = useState<FormData | null>(
+    null
+  );
 
   const methods = useForm<FormData>({
     resolver: zodResolver(formSchema),
@@ -86,24 +91,36 @@ export default function CreateStackPage() {
     watch,
   } = methods;
 
-  const onSubmit: SubmitHandler<FormData> = async (data) => {
+  const handleFormSubmit: SubmitHandler<FormData> = async (data) => {
+    setFormDataToSubmit(data);
+    setIsConfirmModalOpen(true);
+  };
+
+  const handleConfirmDeploy = async () => {
+    if (!formDataToSubmit) return;
+
     try {
       const request = {
-        network: data.network.toLowerCase(),
-        chainName: data.chainName,
-        l1RpcUrl: data.l1RpcUrl,
-        l1BeaconUrl: data.l1BeaconUrl,
-        l2BlockTime: parseInt(data.l2BlockTime),
-        batchSubmissionFrequency: parseInt(data.batchSubmissionFrequency),
-        outputRootFrequency: parseInt(data.outputRootFrequency),
-        challengePeriod: parseInt(data.challengePeriod),
-        adminAccount: data.adminPrivateKey.replace("0x", ""),
-        sequencerAccount: data.sequencerPrivateKey.replace("0x", ""),
-        batcherAccount: data.batcherPrivateKey.replace("0x", ""),
-        proposerAccount: data.proposerPrivateKey.replace("0x", ""),
-        awsAccessKey: data.awsAccessKey,
-        awsSecretAccessKey: data.awsSecretAccessKey,
-        awsRegion: data.awsRegion,
+        network: formDataToSubmit.network.toLowerCase(),
+        chainName: formDataToSubmit.chainName,
+        l1RpcUrl: formDataToSubmit.l1RpcUrl,
+        l1BeaconUrl: formDataToSubmit.l1BeaconUrl,
+        l2BlockTime: parseInt(formDataToSubmit.l2BlockTime),
+        batchSubmissionFrequency: parseInt(
+          formDataToSubmit.batchSubmissionFrequency
+        ),
+        outputRootFrequency: parseInt(formDataToSubmit.outputRootFrequency),
+        challengePeriod: parseInt(formDataToSubmit.challengePeriod),
+        adminAccount: formDataToSubmit.adminPrivateKey.replace("0x", ""),
+        sequencerAccount: formDataToSubmit.sequencerPrivateKey.replace(
+          "0x",
+          ""
+        ),
+        batcherAccount: formDataToSubmit.batcherPrivateKey.replace("0x", ""),
+        proposerAccount: formDataToSubmit.proposerPrivateKey.replace("0x", ""),
+        awsAccessKey: formDataToSubmit.awsAccessKey,
+        awsSecretAccessKey: formDataToSubmit.awsSecretAccessKey,
+        awsRegion: formDataToSubmit.awsRegion,
       };
 
       await thanosService.createStack(request);
@@ -112,6 +129,8 @@ export default function CreateStackPage() {
     } catch (err) {
       console.error("Error creating stack:", err);
       showToast.error("Failed to create stack. Please try again.");
+    } finally {
+      setIsConfirmModalOpen(false);
     }
   };
 
@@ -153,96 +172,110 @@ export default function CreateStackPage() {
   };
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      <div className="mb-8">
-        <Link
-          href="/home"
-          className="flex items-center text-gray-600 hover:text-gray-900"
-        >
-          <ArrowLeft className="w-4 h-4 mr-2" />
-          Back to Dashboard
-        </Link>
-      </div>
-
-      <div className="max-w-4xl mx-auto">
-        <h1 className="text-3xl font-bold mb-8">Deploy New Stack</h1>
-
+    <>
+      <div className="container mx-auto px-4 py-8">
         <div className="mb-8">
-          <div className="flex justify-between items-center">
-            {steps.map((step, index) => (
-              <div
-                key={step.id}
-                className={`flex items-center ${
-                  index < steps.length - 1 ? "flex-1" : ""
-                }`}
-              >
-                <div
-                  className={`w-8 h-8 rounded-full flex items-center justify-center ${
-                    index <= currentStep
-                      ? "bg-blue-600 text-white"
-                      : "bg-gray-200 text-gray-600"
-                  }`}
-                >
-                  {index + 1}
-                </div>
-                <div
-                  className={`ml-2 text-sm ${
-                    index <= currentStep ? "text-gray-900" : "text-gray-500"
-                  }`}
-                >
-                  {step.title}
-                </div>
-                {index < steps.length - 1 && (
-                  <div
-                    className={`flex-1 h-0.5 mx-4 ${
-                      index < currentStep ? "bg-blue-600" : "bg-gray-200"
-                    }`}
-                  />
-                )}
-              </div>
-            ))}
-          </div>
+          <Link
+            href="/home"
+            className="flex items-center text-gray-600 hover:text-gray-900"
+          >
+            <ArrowLeft className="w-4 h-4 mr-2" />
+            Back to Dashboard
+          </Link>
         </div>
 
-        <FormProvider {...methods}>
-          <form onSubmit={handleSubmit(onSubmit)} className="space-y-8">
-            {renderStep()}
+        <div className="max-w-4xl mx-auto">
+          <h1 className="text-3xl font-bold mb-8">Deploy New Stack</h1>
 
-            <div className="flex justify-between">
-              {currentStep > 0 && (
-                <button
-                  type="button"
-                  onClick={prevStep}
-                  className="px-6 py-2 border border-gray-300 rounded-md hover:bg-gray-50 transition-colors"
+          <div className="mb-8">
+            <div className="flex justify-between items-center">
+              {steps.map((step, index) => (
+                <div
+                  key={step.id}
+                  className={`flex items-center ${
+                    index < steps.length - 1 ? "flex-1" : ""
+                  }`}
                 >
-                  Previous
-                </button>
-              )}
-              <div className="ml-auto">
-                {currentStep < steps.length - 1 ? (
+                  <div
+                    className={`w-8 h-8 rounded-full flex items-center justify-center ${
+                      index <= currentStep
+                        ? "bg-blue-600 text-white"
+                        : "bg-gray-200 text-gray-600"
+                    }`}
+                  >
+                    {index + 1}
+                  </div>
+                  <div
+                    className={`ml-2 text-sm ${
+                      index <= currentStep ? "text-gray-900" : "text-gray-500"
+                    }`}
+                  >
+                    {step.title}
+                  </div>
+                  {index < steps.length - 1 && (
+                    <div
+                      className={`flex-1 h-0.5 mx-4 ${
+                        index < currentStep ? "bg-blue-600" : "bg-gray-200"
+                      }`}
+                    />
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <FormProvider {...methods}>
+            <form
+              onSubmit={handleSubmit(handleFormSubmit)}
+              className="space-y-8"
+            >
+              {renderStep()}
+
+              <div className="flex justify-between">
+                {currentStep > 0 && (
                   <button
                     type="button"
-                    onClick={nextStep}
-                    disabled={!isStepValid()}
-                    className="px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors disabled:bg-blue-300 disabled:cursor-not-allowed"
+                    onClick={prevStep}
+                    className="px-6 py-2 border border-gray-300 rounded-md hover:bg-gray-50 transition-colors"
                   >
-                    Next
-                  </button>
-                ) : (
-                  <button
-                    type="button"
-                    onClick={handleSubmit(onSubmit)}
-                    disabled={isSubmitting}
-                    className="px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors disabled:bg-blue-400"
-                  >
-                    {isSubmitting ? "Deploying..." : "Deploy Now"}
+                    Previous
                   </button>
                 )}
+                <div className="ml-auto">
+                  {currentStep < steps.length - 1 ? (
+                    <button
+                      type="button"
+                      onClick={nextStep}
+                      disabled={!isStepValid()}
+                      className="px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors disabled:bg-blue-300 disabled:cursor-not-allowed"
+                    >
+                      Next
+                    </button>
+                  ) : (
+                    <button
+                      type="submit"
+                      disabled={isSubmitting}
+                      className="px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors disabled:bg-blue-400"
+                    >
+                      Deploy Now
+                    </button>
+                  )}
+                </div>
               </div>
-            </div>
-          </form>
-        </FormProvider>
+            </form>
+          </FormProvider>
+        </div>
       </div>
-    </div>
+
+      <ConfirmModal
+        isOpen={isConfirmModalOpen}
+        onClose={() => setIsConfirmModalOpen(false)}
+        onConfirm={handleConfirmDeploy}
+        title="Deploy Stack"
+        message="Are you sure you want to deploy this stack? This action will create resources in your AWS account and cannot be undone."
+        confirmText="Deploy"
+        isLoading={isSubmitting}
+      />
+    </>
   );
 }
