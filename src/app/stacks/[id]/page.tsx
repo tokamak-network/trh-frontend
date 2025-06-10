@@ -57,11 +57,10 @@ export default function StackDetailPage({ params }: PageProps) {
         type,
         config || {}
       );
-      setPlugins([...plugins, newPlugin]);
       showToast.success(
         `${
           type.charAt(0).toUpperCase() + type.slice(1)
-        } plugin created successfully!`
+        } plugin started to install!`
       );
     } catch (err) {
       console.error(err);
@@ -76,9 +75,8 @@ export default function StackDetailPage({ params }: PageProps) {
 
     try {
       setIsUninstallingPlugin(true);
-      await pluginService.deletePlugin(stack.id, plugin.id);
-      setPlugins(plugins.filter((p) => p.id !== plugin.id));
-      showToast.success(`${plugin.name} uninstalled successfully!`);
+      await pluginService.deletePlugin(stack.id, plugin.name as PluginType);
+      showToast.success(`${plugin.name} started to uninstall!`);
     } catch (err) {
       console.error(err);
       showToast.error(`Failed to uninstall ${plugin.name}`);

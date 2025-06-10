@@ -2,6 +2,7 @@ import { Settings, Trash2, Download } from "lucide-react";
 import { StatusBadge } from "@/components/StatusBadge";
 import { Status } from "@/lib/types/status";
 import { PluginItemProps } from "./types";
+import { PluginType } from "@/lib/types/plugin";
 
 export function PluginItem({
   plugin,
@@ -19,12 +20,18 @@ export function PluginItem({
             <h3 className="font-semibold">{plugin.name}</h3>
             <StatusBadge status={plugin.status as Status} />
           </div>
-          <p className="text-gray-600 mt-2">
-            URL:{" "}
-            <a href={plugin.info.url} target="_blank" rel="noopener noreferrer">
-              {plugin.info.url}
-            </a>
-          </p>
+          {plugin.info && (
+            <p className="text-gray-600 mt-2">
+              URL:{" "}
+              <a
+                href={plugin.info.url}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                {plugin.info.url}
+              </a>
+            </p>
+          )}
         </div>
         <div className="flex gap-2">
           <button
@@ -36,7 +43,9 @@ export function PluginItem({
           </button>
           {isTerminated ? (
             <button
-              onClick={() => onInstall?.(plugin.type, plugin.config || {})}
+              onClick={() =>
+                onInstall?.(plugin.name as PluginType, plugin.config || {})
+              }
               className="p-2 text-green-600 hover:text-green-900 hover:bg-green-50 rounded-full transition-colors"
               title="Install Plugin"
             >
@@ -45,8 +54,17 @@ export function PluginItem({
           ) : (
             <button
               onClick={() => onUninstall(plugin)}
-              className="p-2 text-red-600 hover:text-red-900 hover:bg-red-50 rounded-full transition-colors"
+              className={`p-2 text-red-600 hover:text-red-900 hover:bg-red-50 rounded-full transition-colors ${
+                plugin.status === "Terminating" ||
+                plugin.status === "Terminated"
+                  ? "opacity-50 cursor-not-allowed"
+                  : ""
+              }`}
               title="Uninstall Plugin"
+              disabled={
+                plugin.status === "Terminating" ||
+                plugin.status === "Terminated"
+              }
             >
               <Trash2 className="w-5 h-5" />
             </button>

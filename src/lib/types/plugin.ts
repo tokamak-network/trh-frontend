@@ -2,8 +2,7 @@ export type PluginType = "bridge" | "block-explorer";
 
 export interface Plugin {
   id: string;
-  type: PluginType;
-  name: string;
+  name: PluginType;
   status: string;
   stackId: string;
   config: {

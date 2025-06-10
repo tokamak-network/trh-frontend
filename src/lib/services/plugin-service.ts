@@ -28,8 +28,10 @@ class PluginService {
     return response.data;
   }
 
-  async deletePlugin(stackId: string, pluginId: string): Promise<void> {
-    await apiClient.delete(`/stacks/${stackId}/plugins/${pluginId}`);
+  async deletePlugin(stackId: string, type: PluginType): Promise<void> {
+    await apiClient.delete(
+      `${API_ENDPOINTS.THANOS_STACKS}/${stackId}/plugins/${type}`
+    );
   }
 }
 
