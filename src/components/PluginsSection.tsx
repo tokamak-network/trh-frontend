@@ -32,7 +32,7 @@ function PluginItem({ plugin, onViewConfig }: PluginItemProps) {
       <div className="flex justify-between items-start">
         <div className="flex-grow">
           <div className="flex items-center gap-4">
-            <h3 className="font-semibold">{plugin.name}</h3>
+            <h3 className="font-semibold">{plugin.type}</h3>
             <StatusBadge status={plugin.status as Status} />
           </div>
           <p className="text-gray-600 mt-2">
@@ -68,8 +68,8 @@ export function PluginsSection({
   const handleExplorerFormSubmit = async (formData: ExplorerFormData) => {
     await onCreatePlugin("block-explorer", {
       url: `https://explorer.thanos.network`,
-      dbUsername: formData.dbUsername,
-      dbPassword: formData.dbPassword,
+      databaseUsername: formData.databaseUsername,
+      databasePassword: formData.databasePassword,
       coinMarketCapKey: formData.coinMarketCapKey,
       walletConnectId: formData.walletConnectId,
     });
@@ -89,14 +89,14 @@ export function PluginsSection({
     {
       type: "bridge",
       label: "Thanos Bridge",
-      isInstalled: (plugins) => plugins.some((p) => p.name === "bridge"),
+      isInstalled: (plugins) => plugins.some((p) => p.type === "bridge"),
       onClick: () => setShowBridgeConfirmModal(true),
     },
     {
       type: "block-explorer",
       label: "Thanos Explorer",
       isInstalled: (plugins) =>
-        plugins.some((p) => p.name === "block-explorer"),
+        plugins.some((p) => p.type === "block-explorer"),
       onClick: () => setShowExplorerModal(true),
     },
     // Add new plugin types here in the future
@@ -165,7 +165,7 @@ export function PluginsSection({
       <Modal
         isOpen={!!selectedPluginForConfig}
         onClose={() => setSelectedPluginForConfig(null)}
-        title={`${selectedPluginForConfig?.name} Configuration`}
+        title={`${selectedPluginForConfig?.type} Configuration`}
       >
         <div className="p-4">
           <pre className="bg-gray-100 p-4 rounded-md overflow-auto">

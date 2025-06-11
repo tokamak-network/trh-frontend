@@ -21,8 +21,9 @@ class PluginService {
     type: PluginType,
     data?: CreatePluginRequest
   ): Promise<Plugin> {
+    console.log(data);
     const response = await apiClient.post(
-      `${API_ENDPOINTS.THANOS_STACKS}/${stackId}/plugins/${type}`,
+      `${API_ENDPOINTS.THANOS_STACKS}/${stackId}/integrations/${type}`,
       data
     );
     return response.data;
@@ -30,7 +31,7 @@ class PluginService {
 
   async deletePlugin(stackId: string, type: PluginType): Promise<void> {
     await apiClient.delete(
-      `${API_ENDPOINTS.THANOS_STACKS}/${stackId}/plugins/${type}`
+      `${API_ENDPOINTS.THANOS_STACKS}/${stackId}/integrations/${type}`
     );
   }
 }

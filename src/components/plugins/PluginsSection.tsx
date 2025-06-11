@@ -34,8 +34,8 @@ export function PluginsSection({
 
   const handleExplorerFormSubmit = async (formData: ExplorerFormData) => {
     await onCreatePlugin("block-explorer", {
-      dbUsername: formData.dbUsername,
-      dbPassword: formData.dbPassword,
+      databaseUsername: formData.databaseUsername,
+      databasePassword: formData.databasePassword,
       coinMarketCapKey: formData.coinMarketCapKey,
       walletConnectId: formData.walletConnectId,
     });
@@ -135,11 +135,11 @@ export function PluginsSection({
       <Modal
         isOpen={!!selectedPluginForConfig}
         onClose={() => setSelectedPluginForConfig(null)}
-        title={`${selectedPluginForConfig?.name} Configuration`}
+        title={`${selectedPluginForConfig?.type} Configuration`}
       >
         <div className="p-4">
           <pre className="bg-gray-100 p-4 rounded-md overflow-auto">
-            {JSON.stringify(selectedPluginForConfig?.config, null, 2)}
+            {JSON.stringify(selectedPluginForConfig?.info, null, 2)}
           </pre>
         </div>
       </Modal>
@@ -149,7 +149,7 @@ export function PluginsSection({
         onClose={() => setPluginToUninstall(null)}
         onConfirm={handleUninstallConfirm}
         title="Uninstall Plugin"
-        message={`Are you sure you want to uninstall the ${pluginToUninstall?.name} plugin? This action cannot be undone.`}
+        message={`Are you sure you want to uninstall the ${pluginToUninstall?.type} plugin? This action cannot be undone.`}
         confirmText="Uninstall"
         confirmButtonClassName="bg-red-600 hover:bg-red-700"
         isLoading={isUninstallingPlugin}

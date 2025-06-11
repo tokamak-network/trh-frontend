@@ -17,7 +17,7 @@ export function PluginItem({
       <div className="flex justify-between items-start">
         <div className="flex-grow">
           <div className="flex items-center gap-4">
-            <h3 className="font-semibold">{plugin.name}</h3>
+            <h3 className="font-semibold">{plugin.type}</h3>
             <StatusBadge status={plugin.status as Status} />
           </div>
           {plugin.info && (
@@ -44,7 +44,7 @@ export function PluginItem({
           {isTerminated ? (
             <button
               onClick={() =>
-                onInstall?.(plugin.name as PluginType, plugin.config || {})
+                onInstall?.(plugin.type as PluginType, plugin.config || {})
               }
               className="p-2 text-green-600 hover:text-green-900 hover:bg-green-50 rounded-full transition-colors"
               title="Install Plugin"

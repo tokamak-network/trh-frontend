@@ -11,8 +11,8 @@ interface ExplorerPluginFormProps {
 }
 
 export interface ExplorerFormData {
-  dbUsername: string;
-  dbPassword: string;
+  databaseUsername: string;
+  databasePassword: string;
   coinMarketCapKey: string;
   walletConnectId: string;
 }
@@ -27,8 +27,8 @@ export function ExplorerPluginForm({
 
   const methods = useForm<ExplorerFormData>({
     defaultValues: {
-      dbUsername: "",
-      dbPassword: "",
+      databaseUsername: "",
+      databasePassword: "",
       coinMarketCapKey: "",
       walletConnectId: "",
     },
@@ -77,15 +77,15 @@ export function ExplorerPluginForm({
               </h3>
               <div className="grid gap-4">
                 <FormInput
-                  name="dbUsername"
+                  name="databaseUsername"
                   label="Database Username"
-                  placeholder="e.g. victor_thanos_db"
+                  placeholder="e.g. thanos_explorer_db"
                   required
                   tooltip="Used for storing chain data"
                 />
 
                 <FormInput
-                  name="dbPassword"
+                  name="databasePassword"
                   label="Database Password"
                   type="password"
                   placeholder="••••••••"
@@ -105,7 +105,7 @@ export function ExplorerPluginForm({
                   <FormInput
                     name="coinMarketCapKey"
                     label="CoinMarketCap API Key"
-                    placeholder="e.g. c291ce7b-60f0-4e63-8908-e07b04e900b4"
+                    placeholder="e.g. c291ce7b-60f0-4e63-8908-e07b04e923b4"
                     required
                     tooltip="Required for price data integration"
                   />
@@ -124,7 +124,7 @@ export function ExplorerPluginForm({
                   <FormInput
                     name="walletConnectId"
                     label="WalletConnect Project ID"
-                    placeholder="e.g. 881053b0dbae8bdf9ba4b67cf6ef9e70"
+                    placeholder="e.g. 881053b0dbae8bdf9b32b67cf6ef9e70"
                     required
                     tooltip="Required for wallet integration"
                   />

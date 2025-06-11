@@ -67,6 +67,22 @@ export interface CreateStackResponse {
   stack: ThanosStack;
 }
 
+export interface ThanosDeployment {
+  id: string;
+  stack_id: string;
+  step: number;
+  status: string;
+  log_path: string;
+  config: {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    [key: string]: any;
+  };
+}
+
+export interface GetDeploymentsResponse {
+  deployments: ThanosDeployment[];
+}
+
 export const thanosService = {
   /**
    * Fetches all Thanos stacks from the API
@@ -102,5 +118,47 @@ export const thanosService = {
       data
     );
     return response.data.stack;
+  },
+
+  /**
+   * Deletes a Thanos stack by ID
+   * @param id The ID of the stack to delete
+   * @returns Promise<void>
+   */
+  deleteStack: async (id: string): Promise<void> => {
+    await apiClient.delete(`${API_ENDPOINTS.THANOS_STACKS}/${id}`);
+  },
+
+  /**
+   * Resumes a terminated Thanos stack by ID
+   * @param id The ID of the stack to resume
+   * @returns Promise<ThanosStack>
+   */
+  resumeStack: async (id: string): Promise<ThanosStack> => {
+    const response = await apiClient.post<CreateStackResponse>(
+      `${API_ENDPOINTS.THANOS_STACKS}/${id}/resume`
+    );
+    return response.data.stack;
+  },
+
+  /**
+   * Fetches deployments for a Thanos stack by ID
+   * @param id The ID of the stack
+   * @returns Promise<ThanosDeployment[]>
+   */
+  getDeployments: async (id: string): Promise<ThanosDeployment[]> => {
+    const response = await apiClient.get<GetDeploymentsResponse>(
+      `${API_ENDPOINTS.THANOS_STACKS}/${id}/deployments`
+    );
+    return response.data.deployments;
+  },
+
+  /**
+   * Stops a deploying stack by ID
+   * @param id The ID of the stack to stop
+   * @returns Promise<void>
+   */
+  stopStack: async (id: string): Promise<void> => {
+    await apiClient.post(`${API_ENDPOINTS.THANOS_STACKS}/${id}/stop`);
   },
 };
