@@ -9,6 +9,7 @@ export function PluginItem({
   onViewConfig,
   onUninstall,
   onInstall,
+  isUpdatingStack = false,
 }: PluginItemProps) {
   const isTerminated = plugin.status === "Terminated";
 
@@ -36,7 +37,8 @@ export function PluginItem({
         <div className="flex gap-2">
           <button
             onClick={() => onViewConfig(plugin)}
-            className="p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-full transition-colors"
+            disabled={isUpdatingStack}
+            className="p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-full transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             title="View Configuration"
           >
             <Settings className="w-5 h-5" />
@@ -46,7 +48,8 @@ export function PluginItem({
               onClick={() =>
                 onInstall?.(plugin.type as PluginType, plugin.config || {})
               }
-              className="p-2 text-green-600 hover:text-green-900 hover:bg-green-50 rounded-full transition-colors"
+              disabled={isUpdatingStack}
+              className="p-2 text-green-600 hover:text-green-900 hover:bg-green-50 rounded-full transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               title="Install Plugin"
             >
               <Download className="w-5 h-5" />
@@ -54,17 +57,13 @@ export function PluginItem({
           ) : (
             <button
               onClick={() => onUninstall(plugin)}
-              className={`p-2 text-red-600 hover:text-red-900 hover:bg-red-50 rounded-full transition-colors ${
-                plugin.status === "Terminating" ||
-                plugin.status === "Terminated"
-                  ? "opacity-50 cursor-not-allowed"
-                  : ""
-              }`}
-              title="Uninstall Plugin"
               disabled={
+                isUpdatingStack ||
                 plugin.status === "Terminating" ||
                 plugin.status === "Terminated"
               }
+              className={`p-2 text-red-600 hover:text-red-900 hover:bg-red-50 rounded-full transition-colors disabled:opacity-50 disabled:cursor-not-allowed`}
+              title="Uninstall Plugin"
             >
               <Trash2 className="w-5 h-5" />
             </button>

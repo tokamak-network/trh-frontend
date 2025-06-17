@@ -14,6 +14,7 @@ interface PluginsSectionProps {
   onUninstallPlugin: (plugin: Plugin) => Promise<void>;
   isCreatingPlugin: boolean;
   isUninstallingPlugin: boolean;
+  isUpdatingStack?: boolean;
 }
 
 export function PluginsSection({
@@ -22,6 +23,7 @@ export function PluginsSection({
   onUninstallPlugin,
   isCreatingPlugin,
   isUninstallingPlugin,
+  isUpdatingStack = false,
 }: PluginsSectionProps) {
   const [showExplorerModal, setShowExplorerModal] = useState(false);
   const [showBridgeConfirmModal, setShowBridgeConfirmModal] = useState(false);
@@ -79,7 +81,7 @@ export function PluginsSection({
         <div className="relative">
           <button
             onClick={() => setShowDropdown(!showDropdown)}
-            disabled={isCreatingPlugin}
+            disabled={isCreatingPlugin || isUpdatingStack}
             className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
           >
             Add Plugin
@@ -95,7 +97,11 @@ export function PluginsSection({
                     setShowDropdown(false);
                     option.onClick();
                   }}
-                  disabled={isCreatingPlugin || option.isInstalled(plugins)}
+                  disabled={
+                    isCreatingPlugin ||
+                    isUpdatingStack ||
+                    option.isInstalled(plugins)
+                  }
                   className="w-full text-left px-4 py-2 hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-white"
                 >
                   {option.label}
@@ -166,6 +172,7 @@ export function PluginsSection({
               onViewConfig={handleViewConfig}
               onUninstall={handleUninstall}
               onInstall={handleInstall}
+              isUpdatingStack={isUpdatingStack}
             />
           ))
         )}

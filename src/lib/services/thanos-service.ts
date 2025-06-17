@@ -83,6 +83,11 @@ export interface GetDeploymentsResponse {
   deployments: ThanosDeployment[];
 }
 
+export interface UpdateStackRequest {
+  l1RpcUrl: string;
+  l1BeaconUrl: string;
+}
+
 export const thanosService = {
   /**
    * Fetches all Thanos stacks from the API
@@ -160,5 +165,22 @@ export const thanosService = {
    */
   stopStack: async (id: string): Promise<void> => {
     await apiClient.post(`${API_ENDPOINTS.THANOS_STACKS}/${id}/stop`);
+  },
+
+  /**
+   * Updates a Thanos stack by ID
+   * @param id The ID of the stack to update
+   * @param data The update data containing l1RpcUrl and l1BeaconUrl
+   * @returns Promise<ThanosStack>
+   */
+  updateStack: async (
+    id: string,
+    data: UpdateStackRequest
+  ): Promise<ThanosStack> => {
+    const response = await apiClient.put<CreateStackResponse>(
+      `${API_ENDPOINTS.THANOS_STACKS}/${id}`,
+      data
+    );
+    return response.data.stack;
   },
 };

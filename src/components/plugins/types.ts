@@ -13,4 +13,5 @@ export interface PluginItemProps {
   onUninstall: (plugin: Plugin) => void;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   onInstall?: (type: PluginType, config?: any) => void;
+  isUpdatingStack?: boolean;
 }

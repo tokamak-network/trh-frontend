@@ -15,6 +15,11 @@ import { StackInformation } from "@/components/StackInformation";
 import { PluginsSection } from "@/components/plugins/PluginsSection";
 import { DeploymentSteps } from "@/components/DeploymentSteps";
 import { ConfirmModal } from "@/components/ui/ConfirmModal";
+import { Modal } from "@/components/Modal";
+import {
+  UpdateStackForm,
+  UpdateStackFormData,
+} from "@/components/UpdateStackForm";
 
 interface PageProps {
   params: Promise<{ id: string }>;
@@ -35,6 +40,8 @@ export default function StackDetailPage({ params }: PageProps) {
   const [showResumeConfirm, setShowResumeConfirm] = useState(false);
   const [isStoppingStack, setIsStoppingStack] = useState(false);
   const [showStopConfirm, setShowStopConfirm] = useState(false);
+  const [showUpdateModal, setShowUpdateModal] = useState(false);
+  const [isUpdatingStack, setIsUpdatingStack] = useState(false);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -161,6 +168,30 @@ export default function StackDetailPage({ params }: PageProps) {
     }
   };
 
+  const handleUpdateStack = async () => {
+    if (!stack) return;
+    setShowUpdateModal(true);
+  };
+
+  const handleUpdateStackSubmit = async (formData: UpdateStackFormData) => {
+    if (!stack) return;
+
+    try {
+      setIsUpdatingStack(true);
+      await thanosService.updateStack(stack.id, formData);
+      showToast.success("Stack update initiated!");
+      setShowUpdateModal(false);
+      // Refresh stack data to get updated status
+      const updatedStack = await thanosService.getThanosStack(id);
+      setStack(updatedStack);
+    } catch (err) {
+      console.error(err);
+      showToast.error("Failed to update stack");
+    } finally {
+      setIsUpdatingStack(false);
+    }
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
@@ -196,9 +227,11 @@ export default function StackDetailPage({ params }: PageProps) {
             onDestroyStack={handleDestroyStack}
             onResumeStack={handleResumeStack}
             onStopStack={handleStopStack}
+            onUpdateStack={handleUpdateStack}
             isDestroyingStack={isDestroyingStack}
             isResumingStack={isResumingStack}
             isStoppingStack={isStoppingStack}
+            isUpdatingStack={isUpdatingStack}
           />
           <DeploymentSteps deployments={deployments} />
           <PluginsSection
@@ -207,6 +240,7 @@ export default function StackDetailPage({ params }: PageProps) {
             onUninstallPlugin={handleUninstallPlugin}
             isCreatingPlugin={isCreatingPlugin}
             isUninstallingPlugin={isUninstallingPlugin}
+            isUpdatingStack={isUpdatingStack}
           />
         </div>
       </div>
@@ -242,6 +276,19 @@ export default function StackDetailPage({ params }: PageProps) {
         confirmButtonClassName="bg-yellow-600 hover:bg-yellow-700"
         isLoading={isStoppingStack}
       />
+
+      <Modal
+        isOpen={showUpdateModal}
+        onClose={() => setShowUpdateModal(false)}
+        title="Update Stack Configuration"
+      >
+        <UpdateStackForm
+          onSubmit={handleUpdateStackSubmit}
+          isLoading={isUpdatingStack}
+          currentL1RpcUrl={stack?.config.l1RpcUrl}
+          currentL1BeaconUrl={stack?.config.l1BeaconUrl}
+        />
+      </Modal>
     </div>
   );
 }

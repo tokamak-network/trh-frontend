@@ -1,16 +1,18 @@
 import { ThanosStack } from "@/lib/services/thanos-service";
 import { StatusBadge } from "@/components/StatusBadge";
 import { Status } from "@/lib/types/status";
-import { Trash2, RefreshCw, Square } from "lucide-react";
+import { Trash2, RefreshCw, Square, Settings } from "lucide-react";
 
 interface StackInformationProps {
   stack: ThanosStack;
   onDestroyStack: () => void;
   onResumeStack: () => void;
   onStopStack: () => void;
+  onUpdateStack: () => void;
   isDestroyingStack: boolean;
   isResumingStack: boolean;
   isStoppingStack: boolean;
+  isUpdatingStack: boolean;
 }
 
 export function StackInformation({
@@ -18,9 +20,11 @@ export function StackInformation({
   onDestroyStack,
   onResumeStack,
   onStopStack,
+  onUpdateStack,
   isDestroyingStack,
   isResumingStack,
   isStoppingStack,
+  isUpdatingStack,
 }: StackInformationProps) {
   const canResume =
     stack.status === "Terminated" ||
@@ -29,6 +33,9 @@ export function StackInformation({
   const isDeployed = stack.status === "Deployed";
   const isTerminating = stack.status === "Terminating";
   const isDeploying = stack.status === "Deploying";
+  const isActive = stack.status === "Active";
+  const isUpdating = stack.status === "Updating";
+  const canUpdate = isActive || isDeployed;
 
   const renderActionButton = () => {
     if (isDeploying) {
@@ -59,12 +66,39 @@ export function StackInformation({
       );
     }
 
+    if (canUpdate) {
+      return (
+        <div className="flex gap-2">
+          <button
+            onClick={onUpdateStack}
+            disabled={isUpdatingStack || isUpdating}
+            className="flex items-center gap-2 px-4 py-2 rounded-md text-white bg-green-600 hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            <Settings className="w-4 h-4" />
+            {isUpdatingStack || isUpdating ? "Updating..." : "Update"}
+          </button>
+          <button
+            onClick={onDestroyStack}
+            disabled={
+              isDestroyingStack ||
+              isTerminating ||
+              isUpdatingStack ||
+              isUpdating
+            }
+            className="flex items-center gap-2 px-4 py-2 rounded-md text-white bg-red-600 hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            <Trash2 className="w-4 h-4" />
+            {isDestroyingStack ? "Destroying..." : "Destroy"}
+          </button>
+        </div>
+      );
+    }
+
     return (
       <button
         onClick={onDestroyStack}
-        disabled={isDestroyingStack || isTerminating || !isDeployed}
-        className={`flex items-center gap-2 px-4 py-2 rounded-md text-white bg-red-600 hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed`}
-        title={!isDeployed ? "Stack must be in Deployed state to destroy" : ""}
+        disabled={isDestroyingStack || isTerminating}
+        className="flex items-center gap-2 px-4 py-2 rounded-md text-white bg-red-600 hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed"
       >
         <Trash2 className="w-4 h-4" />
         {isDestroyingStack ? "Destroying..." : "Destroy Stack"}

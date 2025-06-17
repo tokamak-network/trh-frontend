@@ -68,6 +68,7 @@ export default function CreateStackPage() {
   const router = useRouter();
   const [currentStep, setCurrentStep] = useState(0);
   const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
+  const [isDeploying, setIsDeploying] = useState(false);
   const [formDataToSubmit, setFormDataToSubmit] = useState<FormData | null>(
     null
   );
@@ -100,6 +101,7 @@ export default function CreateStackPage() {
     if (!formDataToSubmit) return;
 
     try {
+      setIsDeploying(true);
       const request = {
         network: formDataToSubmit.network.toLowerCase(),
         chainName: formDataToSubmit.chainName,
@@ -130,6 +132,7 @@ export default function CreateStackPage() {
       console.error("Error creating stack:", err);
       showToast.error("Failed to create stack. Please try again.");
     } finally {
+      setIsDeploying(false);
       setIsConfirmModalOpen(false);
     }
   };
@@ -274,7 +277,7 @@ export default function CreateStackPage() {
         title="Deploy Stack"
         message="Are you sure you want to deploy this stack? This action will create resources in your AWS account and cannot be undone."
         confirmText="Deploy"
-        isLoading={isSubmitting}
+        isLoading={isDeploying}
       />
     </>
   );
