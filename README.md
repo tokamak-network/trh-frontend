@@ -20,6 +20,49 @@ You can start editing the page by modifying `app/page.tsx`. The page auto-update
 
 This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
 
+## Docker Deployment
+
+This project includes Docker support for containerized deployment.
+
+### Local Docker Build
+
+To build and run the Docker image locally:
+
+```bash
+# Build the image
+docker build -t trh-frontend .
+
+# Run the container
+docker run -p 3000:3000 trh-frontend
+```
+
+### GitHub Actions CI/CD
+
+The project includes a GitHub Actions workflow that automatically builds and pushes Docker images to Docker Hub when code is pushed to the main branch.
+
+#### Setup Required Secrets
+
+To enable Docker Hub integration, you need to add the following secrets to your GitHub repository:
+
+1. Go to your GitHub repository → Settings → Secrets and variables → Actions
+2. Add the following repository secrets:
+   - `DOCKERHUB_USERNAME`: Your Docker Hub username
+   - `DOCKERHUB_TOKEN`: Your Docker Hub access token (not your password)
+
+#### Creating a Docker Hub Access Token
+
+1. Log in to [Docker Hub](https://hub.docker.com)
+2. Go to Account Settings → Security
+3. Click "New Access Token"
+4. Give it a name (e.g., "GitHub Actions")
+5. Copy the token and add it as the `DOCKERHUB_TOKEN` secret
+
+The workflow will automatically:
+- Build the Docker image on every push to main
+- Tag the image with branch name, commit SHA, and semantic version tags
+- Push the image to Docker Hub under your repository name
+- Use GitHub Actions cache for faster builds
+
 ## Learn More
 
 To learn more about Next.js, take a look at the following resources:
