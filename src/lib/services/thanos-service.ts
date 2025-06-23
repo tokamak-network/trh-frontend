@@ -1,6 +1,11 @@
 import { apiClient } from "../api-client";
 import { API_ENDPOINTS } from "../api-config";
 
+export interface ApiResponse {
+  message: string;
+  status: string;
+}
+
 export interface ThanosStackConfig {
   network: string;
   l1RpcUrl: string;
@@ -36,12 +41,16 @@ export interface ThanosStack {
   metadata: ThanosStackMetadata;
 }
 
-export interface GetAllThanosStacksResponse {
-  stacks: ThanosStack[];
+export interface GetAllThanosStacksResponse extends ApiResponse {
+  data: {
+    stacks: ThanosStack[];
+  };
 }
 
-export interface GetThanosStackResponse {
-  stacks: ThanosStack;
+export interface GetThanosStackResponse extends ApiResponse {
+  data: {
+    stack: ThanosStack;
+  };
 }
 
 export interface CreateStackRequest {
@@ -63,8 +72,10 @@ export interface CreateStackRequest {
   deploymentPath?: string;
 }
 
-export interface CreateStackResponse {
-  stack: ThanosStack;
+export interface CreateStackResponse extends ApiResponse {
+  data: {
+    stack: ThanosStack;
+  };
 }
 
 export interface ThanosDeployment {
@@ -79,8 +90,10 @@ export interface ThanosDeployment {
   };
 }
 
-export interface GetDeploymentsResponse {
-  deployments: ThanosDeployment[];
+export interface GetDeploymentsResponse extends ApiResponse {
+  data: {
+    deployments: ThanosDeployment[];
+  };
 }
 
 export interface UpdateStackRequest {
@@ -97,7 +110,7 @@ export const thanosService = {
     const response = await apiClient.get<GetAllThanosStacksResponse>(
       API_ENDPOINTS.THANOS_STACKS
     );
-    return response.data.stacks;
+    return response.data.data.stacks;
   },
 
   /**
@@ -109,7 +122,7 @@ export const thanosService = {
     const response = await apiClient.get<GetThanosStackResponse>(
       `${API_ENDPOINTS.THANOS_STACKS}/${id}`
     );
-    return response.data.stacks;
+    return response.data.data.stack;
   },
 
   /**
@@ -118,11 +131,12 @@ export const thanosService = {
    * @returns Promise<ThanosStack>
    */
   createStack: async (data: CreateStackRequest): Promise<ThanosStack> => {
+    console.log(data);
     const response = await apiClient.post<CreateStackResponse>(
       API_ENDPOINTS.THANOS_STACKS,
       data
     );
-    return response.data.stack;
+    return response.data.data.stack;
   },
 
   /**
@@ -143,7 +157,7 @@ export const thanosService = {
     const response = await apiClient.post<CreateStackResponse>(
       `${API_ENDPOINTS.THANOS_STACKS}/${id}/resume`
     );
-    return response.data.stack;
+    return response.data.data.stack;
   },
 
   /**
@@ -155,7 +169,7 @@ export const thanosService = {
     const response = await apiClient.get<GetDeploymentsResponse>(
       `${API_ENDPOINTS.THANOS_STACKS}/${id}/deployments`
     );
-    return response.data.deployments;
+    return response.data.data.deployments;
   },
 
   /**
@@ -181,6 +195,6 @@ export const thanosService = {
       `${API_ENDPOINTS.THANOS_STACKS}/${id}`,
       data
     );
-    return response.data.stack;
+    return response.data.data.stack;
   },
 };
