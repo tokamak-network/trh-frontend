@@ -151,13 +151,12 @@ export const thanosService = {
   /**
    * Resumes a terminated Thanos stack by ID
    * @param id The ID of the stack to resume
-   * @returns Promise<ThanosStack>
+   * @returns Promise<void>
    */
-  resumeStack: async (id: string): Promise<ThanosStack> => {
-    const response = await apiClient.post<CreateStackResponse>(
+  resumeStack: async (id: string): Promise<void> => {
+    await apiClient.post<CreateStackResponse>(
       `${API_ENDPOINTS.THANOS_STACKS}/${id}/resume`
     );
-    return response.data.data.stack;
   },
 
   /**
