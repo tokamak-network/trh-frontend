@@ -80,6 +80,9 @@ export default function StackDetailPage({ params }: PageProps) {
           type.charAt(0).toUpperCase() + type.slice(1)
         } plugin started to install!`
       );
+      // Refresh plugins data
+      const updatedPlugins = await pluginService.getPlugins(stack.id);
+      setPlugins(updatedPlugins);
     } catch (err) {
       console.error(err);
       showToast.error(`Failed to create ${type} plugin`);
@@ -95,6 +98,9 @@ export default function StackDetailPage({ params }: PageProps) {
       setIsUninstallingPlugin(true);
       await pluginService.deletePlugin(stack.id, plugin.type as PluginType);
       showToast.success(`${plugin.type} started to uninstall!`);
+      // Refresh plugins data
+      const updatedPlugins = await pluginService.getPlugins(stack.id);
+      setPlugins(updatedPlugins);
     } catch (err) {
       console.error(err);
       showToast.error(`Failed to uninstall ${plugin.type}`);
@@ -115,6 +121,9 @@ export default function StackDetailPage({ params }: PageProps) {
       setIsDestroyingStack(true);
       await thanosService.deleteStack(stack.id);
       showToast.success("Stack deletion initiated!");
+      // Refresh stack data
+      const updatedStack = await thanosService.getThanosStack(id);
+      setStack(updatedStack);
       // Redirect to home page after successful deletion
       window.location.href = "/home";
     } catch (err) {
@@ -138,6 +147,9 @@ export default function StackDetailPage({ params }: PageProps) {
       setIsResumingStack(true);
       await thanosService.resumeStack(stack.id);
       showToast.success("Stack resume initiated!");
+      // Refresh stack data
+      const updatedStack = await thanosService.getThanosStack(id);
+      setStack(updatedStack);
     } catch (err) {
       console.error(err);
       showToast.error("Failed to resume stack");
@@ -159,6 +171,9 @@ export default function StackDetailPage({ params }: PageProps) {
       setIsStoppingStack(true);
       await thanosService.stopStack(stack.id);
       showToast.success("Stack stop initiated!");
+      // Refresh stack data
+      const updatedStack = await thanosService.getThanosStack(id);
+      setStack(updatedStack);
     } catch (err) {
       console.error(err);
       showToast.error("Failed to stop stack");

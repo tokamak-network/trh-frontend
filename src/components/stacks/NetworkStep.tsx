@@ -39,7 +39,7 @@ export function NetworkStep() {
           <input
             {...register("chainName")}
             type="text"
-            placeholder="e.g., my-l2-chain"
+            placeholder="e.g., thanos sepolia"
             className={`w-full px-3 py-2 border rounded-md ${
               errors.chainName ? "border-red-500" : "border-gray-300"
             }`}
