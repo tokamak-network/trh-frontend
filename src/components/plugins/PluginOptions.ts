@@ -2,7 +2,9 @@ import { PluginOption } from "./types";
 
 export const createPluginOptions = (
   onBridgeClick: () => void,
-  onExplorerClick: () => void
+  onExplorerClick: () => void,
+  onMonitoringClick: () => void,
+  onCandidateRegistryClick: () => void
 ): PluginOption[] => [
   {
     type: "bridge",
@@ -15,6 +17,19 @@ export const createPluginOptions = (
     label: "Thanos Explorer",
     isInstalled: (plugins) => plugins.some((p) => p.type === "block-explorer"),
     onClick: onExplorerClick,
+  },
+  {
+    type: "monitoring",
+    label: "Monitoring",
+    isInstalled: (plugins) => plugins.some((p) => p.type === "monitoring"),
+    onClick: onMonitoringClick,
+  },
+  {
+    type: "candidate-registry",
+    label: "DAO Candidate Registry",
+    isInstalled: (plugins) =>
+      plugins.some((p) => p.type === "candidate-registry"),
+    onClick: onCandidateRegistryClick,
   },
   // Add new plugin types here in the future
 ];

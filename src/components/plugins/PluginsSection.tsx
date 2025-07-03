@@ -1,6 +1,14 @@
 import { useState } from "react";
 import { Plugin, PluginType } from "@/lib/types/plugin";
 import { ExplorerPluginForm, ExplorerFormData } from "../ExplorerPluginForm";
+import {
+  MonitoringPluginForm,
+  MonitoringFormData,
+} from "../MonitoringPluginForm";
+import {
+  CandidateRegistryPluginForm,
+  CandidateRegistryFormData,
+} from "../CandidateRegistryPluginForm";
 import { Modal } from "../Modal";
 import { ConfirmModal } from "../ui/ConfirmModal";
 import { ChevronDown } from "lucide-react";
@@ -26,6 +34,9 @@ export function PluginsSection({
   isUpdatingStack = false,
 }: PluginsSectionProps) {
   const [showExplorerModal, setShowExplorerModal] = useState(false);
+  const [showMonitoringModal, setShowMonitoringModal] = useState(false);
+  const [showCandidateRegistryModal, setShowCandidateRegistryModal] =
+    useState(false);
   const [showBridgeConfirmModal, setShowBridgeConfirmModal] = useState(false);
   const [showDropdown, setShowDropdown] = useState(false);
   const [selectedPluginForConfig, setSelectedPluginForConfig] =
@@ -42,6 +53,24 @@ export function PluginsSection({
       walletConnectId: formData.walletConnectId,
     });
     setShowExplorerModal(false);
+  };
+
+  const handleMonitoringFormSubmit = async (formData: MonitoringFormData) => {
+    await onCreatePlugin("monitoring", {
+      grafanaPassword: formData.grafanaPassword,
+    });
+    setShowMonitoringModal(false);
+  };
+
+  const handleCandidateRegistryFormSubmit = async (
+    formData: CandidateRegistryFormData
+  ) => {
+    await onCreatePlugin("candidate-registry", {
+      amount: formData.amount,
+      memo: formData.memo,
+      nameInfo: formData.nameInfo,
+    });
+    setShowCandidateRegistryModal(false);
   };
 
   const handleBridgeConfirm = async () => {
@@ -71,7 +100,9 @@ export function PluginsSection({
 
   const pluginOptions = createPluginOptions(
     () => setShowBridgeConfirmModal(true),
-    () => setShowExplorerModal(true)
+    () => setShowExplorerModal(true),
+    () => setShowMonitoringModal(true),
+    () => setShowCandidateRegistryModal(true)
   );
 
   return (
@@ -124,6 +155,28 @@ export function PluginsSection({
       >
         <ExplorerPluginForm
           onSubmit={handleExplorerFormSubmit}
+          isLoading={isCreatingPlugin}
+        />
+      </Modal>
+
+      <Modal
+        isOpen={showMonitoringModal}
+        onClose={() => setShowMonitoringModal(false)}
+        title="Configure Monitoring Plugin"
+      >
+        <MonitoringPluginForm
+          onSubmit={handleMonitoringFormSubmit}
+          isLoading={isCreatingPlugin}
+        />
+      </Modal>
+
+      <Modal
+        isOpen={showCandidateRegistryModal}
+        onClose={() => setShowCandidateRegistryModal(false)}
+        title="Configure DAO Candidate Registry Plugin"
+      >
+        <CandidateRegistryPluginForm
+          onSubmit={handleCandidateRegistryFormSubmit}
           isLoading={isCreatingPlugin}
         />
       </Modal>

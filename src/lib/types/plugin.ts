@@ -1,4 +1,8 @@
-export type PluginType = "bridge" | "block-explorer";
+export type PluginType =
+  | "bridge"
+  | "block-explorer"
+  | "monitoring"
+  | "candidate-registry";
 
 export interface Plugin {
   id: string;
