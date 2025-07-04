@@ -2,7 +2,7 @@ export type PluginType =
   | "bridge"
   | "block-explorer"
   | "monitoring"
-  | "candidate-registry";
+  | "register-candidate";
 
 export interface Plugin {
   id: string;

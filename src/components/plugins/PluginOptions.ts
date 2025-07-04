@@ -25,10 +25,10 @@ export const createPluginOptions = (
     onClick: onMonitoringClick,
   },
   {
-    type: "candidate-registry",
+    type: "register-candidate",
     label: "DAO Candidate Registry",
     isInstalled: (plugins) =>
-      plugins.some((p) => p.type === "candidate-registry"),
+      plugins.some((p) => p.type === "register-candidate"),
     onClick: onCandidateRegistryClick,
   },
   // Add new plugin types here in the future

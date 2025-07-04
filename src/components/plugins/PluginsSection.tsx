@@ -65,7 +65,7 @@ export function PluginsSection({
   const handleCandidateRegistryFormSubmit = async (
     formData: CandidateRegistryFormData
   ) => {
-    await onCreatePlugin("candidate-registry", {
+    await onCreatePlugin("register-candidate", {
       amount: formData.amount,
       memo: formData.memo,
       nameInfo: formData.nameInfo,
