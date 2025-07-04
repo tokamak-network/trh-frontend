@@ -42,11 +42,35 @@ const awsStepSchema = z.object({
   deploymentPath: z.string().optional(),
 });
 
+const candidateRegistryStepSchema = z
+  .object({
+    registerCandidate: z.boolean(),
+    candidateAmount: z.string().optional(),
+    candidateMemo: z.string().optional(),
+    candidateNameInfo: z.string().optional(),
+  })
+  .refine(
+    (data) => {
+      if (data.registerCandidate) {
+        return (
+          data.candidateAmount && data.candidateMemo && data.candidateNameInfo
+        );
+      }
+      return true;
+    },
+    {
+      message:
+        "All candidate registry fields are required when registering candidate",
+      path: ["candidateAmount"],
+    }
+  );
+
 export const stepSchemas = {
   network: networkStepSchema,
   configuration: configurationStepSchema,
   accounts: accountsStepSchema,
   aws: awsStepSchema,
+  candidateRegistry: candidateRegistryStepSchema,
 } as const;
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any

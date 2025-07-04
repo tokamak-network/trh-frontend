@@ -12,6 +12,7 @@ import { NetworkStep } from "@/components/stacks/NetworkStep";
 import { ConfigurationStep } from "@/components/stacks/ConfigurationStep";
 import { AccountsStep } from "@/components/stacks/AccountsStep";
 import { AwsConfigStep } from "@/components/stacks/AwsConfigStep";
+import { CandidateRegistryStep } from "@/components/stacks/CandidateRegistryStep";
 import { ReviewStep } from "@/components/stacks/ReviewStep";
 import { stepSchemas, validateStep } from "@/lib/validation/stack-validation";
 import { showToast } from "@/lib/utils/toast";
@@ -52,6 +53,10 @@ const formSchema = z.object({
   awsSecretAccessKey: z.string().min(1, "AWS Secret Access Key is required"),
   awsRegion: z.string().min(1, "AWS Region is required"),
   deploymentPath: z.string().optional(),
+  registerCandidate: z.boolean(),
+  candidateAmount: z.string().optional(),
+  candidateMemo: z.string().optional(),
+  candidateNameInfo: z.string().optional(),
 });
 
 type FormData = z.infer<typeof formSchema>;
@@ -61,6 +66,7 @@ const steps = [
   { id: "configuration", title: "Configuration" },
   { id: "accounts", title: "Accounts" },
   { id: "aws", title: "AWS Configuration" },
+  { id: "candidateRegistry", title: "Candidate Registry" },
   { id: "review", title: "Review" },
 ] as const;
 
@@ -83,6 +89,7 @@ export default function CreateStackPage() {
       batchSubmissionFrequency: "1440",
       outputRootFrequency: "240",
       challengePeriod: "12",
+      registerCandidate: true,
     },
   });
 
@@ -123,6 +130,14 @@ export default function CreateStackPage() {
         awsAccessKey: formDataToSubmit.awsAccessKey,
         awsSecretAccessKey: formDataToSubmit.awsSecretAccessKey,
         awsRegion: formDataToSubmit.awsRegion,
+        registerCandidate: formDataToSubmit.registerCandidate,
+        ...(formDataToSubmit.registerCandidate && {
+          registerCandidateParams: {
+            amount: parseFloat(formDataToSubmit.candidateAmount || "0"),
+            memo: formDataToSubmit.candidateMemo || "",
+            nameInfo: formDataToSubmit.candidateNameInfo || "",
+          },
+        }),
       };
 
       await thanosService.createStack(request);
@@ -168,6 +183,8 @@ export default function CreateStackPage() {
       case 3:
         return <AwsConfigStep />;
       case 4:
+        return <CandidateRegistryStep />;
+      case 5:
         return <ReviewStep />;
       default:
         return null;

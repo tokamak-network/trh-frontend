@@ -32,7 +32,12 @@ export function CandidateRegistryPluginForm({
   });
 
   const handleSubmit = async (data: CandidateRegistryFormData) => {
-    setFormDataToSubmit(data);
+    // Convert amount from string to number
+    const formData: CandidateRegistryFormData = {
+      ...data,
+      amount: parseFloat(String(data.amount)) || 0,
+    };
+    setFormDataToSubmit(formData);
     setIsConfirmModalOpen(true);
   };
 

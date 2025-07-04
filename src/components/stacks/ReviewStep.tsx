@@ -13,20 +13,33 @@ function ReviewSection({ title, fields }: ReviewSectionProps) {
     <div className="mb-8">
       <h3 className="text-lg font-semibold mb-4">{title}</h3>
       <div className="space-y-3">
-        {fields.map(({ key, label, type }) => (
-          <div key={key} className="flex flex-col">
-            <p className="text-sm text-gray-600">{label}</p>
-            <p className="font-medium break-all">
-              {type === "password" ? "••••••••" : values[key] || "-"}
-            </p>
-          </div>
-        ))}
+        {fields.map(({ key, label, type }) => {
+          const value = values[key];
+          let displayValue = value || "-";
+
+          if (typeof value === "boolean") {
+            displayValue = value ? "Yes" : "No";
+          } else if (type === "password") {
+            displayValue = "••••••••";
+          }
+
+          return (
+            <div key={key} className="flex flex-col">
+              <p className="text-sm text-gray-600">{label}</p>
+              <p className="font-medium break-all">{displayValue}</p>
+            </div>
+          );
+        })}
       </div>
     </div>
   );
 }
 
 export function ReviewStep() {
+  const { watch } = useFormContext();
+  const values = watch();
+  const registerCandidate = values.registerCandidate;
+
   return (
     <section className="bg-white rounded-lg shadow-sm p-6">
       <h2 className="text-xl font-semibold mb-6">Review Configuration</h2>
@@ -74,6 +87,20 @@ export function ReviewStep() {
             label: "AWS Secret Access Key",
             type: "password",
           },
+        ]}
+      />
+
+      <ReviewSection
+        title="Candidate Registry Plugin"
+        fields={[
+          { key: "registerCandidate", label: "Install Candidate Registry" },
+          ...(registerCandidate
+            ? [
+                { key: "candidateAmount", label: "Registration Amount" },
+                { key: "candidateMemo", label: "Memo" },
+                { key: "candidateNameInfo", label: "Name Information" },
+              ]
+            : []),
         ]}
       />
 
